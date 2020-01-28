@@ -14,13 +14,14 @@ for CERT in rds-ca-*; do
   alias=$(openssl x509 -noout -text -in $CERT | perl -ne 'next unless /Subject:/; s/.*(CN=|CN = )//; print')
   echo "Importing $alias"
   keytool -import -file ${CERT} -alias "${alias}" -storepass ${storepassword} -keystore ${truststore} -noprompt
-  rm $CERT
 done
 
-
 mkdir /usr/local/share/ca-certificates/aws
-mv ${mydir}/rds-combined-ca-bundle.pem /usr/local/share/ca-certificates/aws
 
-openssl x509 -in /usr/local/share/ca-certificates/aws/rds-combined-ca-bundle.pem -inform PEM -out /usr/local/share/ca-certificates/aws/rds-ca-2019-root.crt
+mv rds-ca-* /usr/local/share/ca-certificates/aws
+
+for CERT in /usr/local/share/ca-certificates/aws/rds-ca-*; do
+  openssl x509 -in $CERT -inform PEM -out ${CERT}.crt
+done
 
 update-ca-certificates
